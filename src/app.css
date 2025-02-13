@@ -17,3 +17,8 @@
 .face-generator meter {
   width: 100%;
 }
+
+.monospace {
+  font-family: monospace;
+  letter-spacing: 0.1em;
+}

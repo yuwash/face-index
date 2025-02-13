@@ -6,8 +6,10 @@
   let svgContainer: HTMLDivElement;
   let draw: any;
   let faceIndex = 0;
+  let startingPoint = { ...FaceModel.DEFAULT_STARTING_POINT };
+  let referenceCode = FaceModel.getStartingPointReference(startingPoint);
   
-  $: params = FaceModel.getParameters(faceIndex);
+  $: params = FaceModel.getParameters(faceIndex, startingPoint);
   
   function updateFace(index: number) {
     if (!draw) return;
@@ -123,6 +125,17 @@
               <small>{key}</small>
             </div>
           {/each}
+        </div>
+      </div>
+      <div class="card-section">
+        <div class="input-group">
+          <span class="input-group-label">Starting Point Reference</span>
+          <input
+            type="text"
+            value={referenceCode}
+            disabled
+            class="input-group-field monospace"
+          />
         </div>
       </div>
     </div>

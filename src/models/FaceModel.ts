@@ -19,20 +19,56 @@ export interface FaceDimensions {
 
 export class FaceModel {
   private static readonly BASE_FREQ = 2 * Math.PI / 100;
+  private static readonly PARAM_ORDER: (keyof FaceParameters)[] = [
+    'eyebrowCurve',
+    'eyebrowPeakOffset',
+    'eyebrowWidth',
+    'eyeYOffset',
+    'eyeXOffset',
+    'upperLipCurve',
+    'lowerLipCurve',
+    'cupidBowOffset',
+    'noseWidth'
+  ];
 
-  public static getParameters(faceIndex: number): FaceParameters {
+  public static readonly DEFAULT_STARTING_POINT: FaceParameters = {
+    eyebrowCurve: 0,
+    eyebrowPeakOffset: 0,
+    eyebrowWidth: 0,
+    eyeYOffset: 0,
+    eyeXOffset: 0,
+    upperLipCurve: 0,
+    lowerLipCurve: 0,
+    cupidBowOffset: 0,
+    noseWidth: 0
+  };
+
+  public static getParameters(faceIndex: number, startingPoint: FaceParameters): FaceParameters {
     const t = faceIndex;
     return {
-      eyebrowCurve: Math.sin(6 * this.BASE_FREQ * t),
-      eyebrowPeakOffset: Math.sin(8 * this.BASE_FREQ * t),
-      eyebrowWidth: Math.sin(8 * this.BASE_FREQ * t),
-      eyeYOffset: Math.sin(1 * this.BASE_FREQ * t),
-      eyeXOffset: Math.sin(2 * this.BASE_FREQ * t),
-      upperLipCurve: Math.sin(4 * this.BASE_FREQ * t),
-      lowerLipCurve: Math.sin(5 * this.BASE_FREQ * t),
-      cupidBowOffset: Math.sin(10 * this.BASE_FREQ * t),
-      noseWidth: Math.sin(7 * this.BASE_FREQ * t),
+      eyebrowCurve: Math.sin(7 * this.BASE_FREQ * t + startingPoint.eyebrowCurve),
+      eyebrowPeakOffset: Math.sin(13 * this.BASE_FREQ * t + startingPoint.eyebrowPeakOffset),
+      eyebrowWidth: Math.sin(17 * this.BASE_FREQ * t + startingPoint.eyebrowWidth),
+      eyeYOffset: Math.sin(1 * this.BASE_FREQ * t + startingPoint.eyeYOffset),
+      eyeXOffset: Math.sin(2 * this.BASE_FREQ * t + startingPoint.eyeXOffset),
+      upperLipCurve: Math.sin(3 * this.BASE_FREQ * t + startingPoint.upperLipCurve),
+      lowerLipCurve: Math.sin(5 * this.BASE_FREQ * t + startingPoint.lowerLipCurve),
+      cupidBowOffset: Math.sin(19 * this.BASE_FREQ * t + startingPoint.cupidBowOffset),
+      noseWidth: Math.sin(11 * this.BASE_FREQ * t + startingPoint.noseWidth),
     };
+  }
+
+  public static getStartingPointReference(startingPoint: FaceParameters): string {
+    return this.PARAM_ORDER.map(key => {
+      // Convert angle to amplitude using sin
+      const amplitude = Math.sin(startingPoint[key]);
+      // Map from [-1, 1] to [0, 255]
+      const byte = Math.round((amplitude + 1) * 256 / 2);
+      // Ensure the value is between 0 and 255
+      const clampedByte = Math.max(0, Math.min(255, byte));
+      // Convert to hex and pad with zeros if necessary
+      return clampedByte.toString(16).padStart(2, '0');
+    }).join('');
   }
 
   public static getFeaturePositions(dimensions: FaceDimensions, params: FaceParameters) {
