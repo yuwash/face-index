@@ -9,8 +9,13 @@
   let startingPoint = { ...FaceModel.DEFAULT_STARTING_POINT };
   let referenceCode = FaceModel.getStartingPointReference(startingPoint);
   let isValidReference = true;
+  let isAdjustMode = false;
   
   $: params = FaceModel.getParameters(faceIndex, startingPoint);
+  $: if (isAdjustMode) {
+    faceIndex = 0;
+  }
+  $: if (draw && startingPoint) updateFace(faceIndex);
   
   function handleReferenceChange(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -26,6 +31,25 @@
     if (isValidReference) {
       startingPoint = FaceModel.parseReference(referenceCode);
     }
+  }
+
+  function toggleAdjustMode() {
+    isAdjustMode = !isAdjustMode;
+    if (!isAdjustMode) {
+      // Update reference code when exiting adjust mode
+      referenceCode = FaceModel.getStartingPointReference(startingPoint);
+    }
+  }
+
+  function handleParameterChange(key: keyof FaceParameters, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = parseFloat(input.value);
+    startingPoint = {
+      ...startingPoint,
+      [key]: value
+    };
+    // Update reference code in real-time while adjusting
+    referenceCode = FaceModel.getStartingPointReference(startingPoint);
   }
   
   function updateFace(index: number) {
@@ -112,8 +136,6 @@
     draw = SVG().addTo(svgContainer).size(300, 400);
     updateFace(faceIndex);
   });
-  
-  $: if (draw) updateFace(faceIndex);
 </script>
 
 <div class="face-generator">
@@ -131,6 +153,7 @@
             max="100"
             bind:value={faceIndex}
             style="width: 100%;"
+            disabled={isAdjustMode}
           />
           <div class="text-center">Face Index: {faceIndex}</div>
         </div>
@@ -138,7 +161,18 @@
         <div class="parameters">
           {#each Object.entries(params) as [key, value]}
             <div>
-              <meter value={value} min={-1} max={1}></meter>
+              {#if isAdjustMode}
+                <input
+                  type="range"
+                  min={-Math.PI/2}
+                  max={Math.PI/2}
+                  step="0.01"
+                  value={startingPoint[key]}
+                  on:input={(e) => handleParameterChange(key, e)}
+                />
+              {:else}
+                <meter value={value} min={-1} max={1}></meter>
+              {/if}
               <small>{key}</small>
             </div>
           {/each}
@@ -154,14 +188,25 @@
               on:input={handleReferenceChange}
               class="input-group-field monospace"
               class:is-invalid-input={!isValidReference}
+              disabled={isAdjustMode}
             />
             <div class="input-group-button">
+              {#if !isAdjustMode}
+                <button
+                  type="submit"
+                  class="button"
+                  disabled={!isValidReference}
+                >
+                  Apply
+                </button>
+              {/if}
               <button
-                type="submit"
+                type="button"
                 class="button"
-                disabled={!isValidReference}
+                class:secondary={!isAdjustMode}
+                on:click={toggleAdjustMode}
               >
-                Apply
+                {isAdjustMode ? 'Done' : 'Adjust'}
               </button>
             </div>
           </div>
