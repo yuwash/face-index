@@ -8,8 +8,19 @@
   let faceIndex = 0;
   let startingPoint = { ...FaceModel.DEFAULT_STARTING_POINT };
   let referenceCode = FaceModel.getStartingPointReference(startingPoint);
+  let isValidReference = true;
   
   $: params = FaceModel.getParameters(faceIndex, startingPoint);
+  
+  function handleReferenceChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    isValidReference = FaceModel.validateReference(value);
+    if (isValidReference) {
+      referenceCode = value;
+      // TODO: Update startingPoint based on the reference code
+    }
+  }
   
   function updateFace(index: number) {
     if (!draw) return;
@@ -133,8 +144,9 @@
           <input
             type="text"
             value={referenceCode}
-            disabled
+            on:input={handleReferenceChange}
             class="input-group-field monospace"
+            class:is-invalid-input={!isValidReference}
           />
         </div>
       </div>

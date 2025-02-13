@@ -43,6 +43,11 @@ export class FaceModel {
     noseWidth: 0
   };
 
+  public static validateReference(reference: string): boolean {
+    const hexPattern = /^[0-9A-Fa-f]{18}$/;
+    return hexPattern.test(reference);
+  }
+
   public static getParameters(faceIndex: number, startingPoint: FaceParameters): FaceParameters {
     const t = faceIndex;
     return {

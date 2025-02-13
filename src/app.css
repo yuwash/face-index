@@ -22,3 +22,13 @@
   font-family: monospace;
   letter-spacing: 0.1em;
 }
+
+.is-invalid-input {
+  border-color: #cc4b37;
+  background-color: #faedeb;
+}
+
+.is-invalid-input:focus {
+  border-color: #cc4b37;
+  background-color: #faedeb;
+}
