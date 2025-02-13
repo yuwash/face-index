@@ -18,7 +18,13 @@
     isValidReference = FaceModel.validateReference(value);
     if (isValidReference) {
       referenceCode = value;
-      // TODO: Update startingPoint based on the reference code
+    }
+  }
+
+  function handleSubmit(event: Event) {
+    event.preventDefault();
+    if (isValidReference) {
+      startingPoint = FaceModel.parseReference(referenceCode);
     }
   }
   
@@ -139,16 +145,27 @@
         </div>
       </div>
       <div class="card-section">
-        <div class="input-group">
-          <span class="input-group-label">Starting Point Reference</span>
-          <input
-            type="text"
-            value={referenceCode}
-            on:input={handleReferenceChange}
-            class="input-group-field monospace"
-            class:is-invalid-input={!isValidReference}
-          />
-        </div>
+        <form on:submit={handleSubmit}>
+          <div class="input-group">
+            <span class="input-group-label">Starting Point Reference</span>
+            <input
+              type="text"
+              value={referenceCode}
+              on:input={handleReferenceChange}
+              class="input-group-field monospace"
+              class:is-invalid-input={!isValidReference}
+            />
+            <div class="input-group-button">
+              <button
+                type="submit"
+                class="button"
+                disabled={!isValidReference}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>

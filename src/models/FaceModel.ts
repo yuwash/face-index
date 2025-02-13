@@ -76,6 +76,24 @@ export class FaceModel {
     }).join('');
   }
 
+  public static parseReference(reference: string): FaceParameters {
+    const bytes = reference.match(/.{2}/g)?.map(hex => parseInt(hex, 16)) || [];
+    const newStartingPoint = { ...this.DEFAULT_STARTING_POINT };
+
+    this.PARAM_ORDER.forEach((key, index) => {
+      if (index < bytes.length) {
+        // Map from [0, 255] back to [-1, 1]
+        const amplitude = (bytes[index] * 2 / 256) - 1;
+        // Convert amplitude back to angle using arcsin
+        // Clamp to avoid NaN from arcsin of values outside [-1, 1]
+        const clampedAmplitude = Math.max(-1, Math.min(1, amplitude));
+        newStartingPoint[key] = Math.asin(clampedAmplitude);
+      }
+    });
+
+    return newStartingPoint;
+  }
+
   public static getFeaturePositions(dimensions: FaceDimensions, params: FaceParameters) {
     const { centerX, centerY } = dimensions;
     const eyeBaseWidth = 20;
