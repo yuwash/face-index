@@ -51,6 +51,11 @@
     // Update reference code in real-time while adjusting
     referenceCode = FaceModel.getStartingPointReference(startingPoint);
   }
+
+  function resetStartingPoint() {
+    startingPoint = { ...FaceModel.DEFAULT_STARTING_POINT };
+    referenceCode = FaceModel.getStartingPointReference(startingPoint);
+  }
   
   function updateFace(index: number) {
     if (!draw) return;
@@ -207,6 +212,13 @@
                 on:click={toggleAdjustMode}
               >
                 {isAdjustMode ? 'Done' : 'Adjust'}
+              </button>
+              <button
+                type="button"
+                class="button alert"
+                on:click={resetStartingPoint}
+              >
+                Reset
               </button>
             </div>
           </div>
