@@ -71,16 +71,16 @@
     
     const features = FaceModel.getFeaturePositions(dimensions, params);
     
-    // Draw eyebrows
+    // Draw eyebrows with variable stroke width
     draw
       .path(features.eyebrows.leftPath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.eyebrows, color: '#000' });
       
     draw
       .path(features.eyebrows.rightPath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.eyebrows, color: '#000' });
       
     // Draw eyes
     draw
@@ -90,7 +90,7 @@
         features.eyes.leftEnd.x,
         features.eyes.leftEnd.y
       )
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
       
     draw
       .line(
@@ -99,7 +99,7 @@
         features.eyes.rightEnd.x,
         features.eyes.rightEnd.y
       )
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
       
     // Draw nose
     draw
@@ -118,23 +118,23 @@
     draw
       .path(features.nose.leftAlaePath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
       
     draw
       .path(features.nose.rightAlaePath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
       
     // Draw mouth
     draw
       .path(features.mouth.upperPath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
       
     draw
       .path(features.mouth.lowerPath)
       .fill('none')
-      .stroke({ width: 2, color: '#000' });
+      .stroke({ width: features.strokeWidths.base, color: '#000' });
   }
   
   onMount(() => {

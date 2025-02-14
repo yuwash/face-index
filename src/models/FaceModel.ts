@@ -8,6 +8,9 @@ export interface FaceParameters {
   lowerLipCurve: number;
   cupidBowOffset: number;
   noseWidth: number;
+  cupidBowStrength: number;
+  mouthWidth: number;
+  eyebrowStrokeWidth: number;
 }
 
 export interface FaceDimensions {
@@ -28,7 +31,10 @@ export class FaceModel {
     'upperLipCurve',
     'lowerLipCurve',
     'cupidBowOffset',
-    'noseWidth'
+    'noseWidth',
+    'cupidBowStrength',
+    'mouthWidth',
+    'eyebrowStrokeWidth'
   ];
 
   public static readonly DEFAULT_STARTING_POINT: FaceParameters = {
@@ -40,11 +46,14 @@ export class FaceModel {
     upperLipCurve: 0,
     lowerLipCurve: 0,
     cupidBowOffset: 0,
-    noseWidth: 0
+    noseWidth: 0,
+    cupidBowStrength: 0,
+    mouthWidth: 0,
+    eyebrowStrokeWidth: 0
   };
 
   public static validateReference(reference: string): boolean {
-    const hexPattern = /^[0-9A-Fa-f]{18}$/;
+    const hexPattern = /^[0-9A-Fa-f]{24}$/; // Updated for 12 parameters (2 hex digits each)
     return hexPattern.test(reference);
   }
 
@@ -98,58 +107,78 @@ export class FaceModel {
     const { centerX, centerY } = dimensions;
     const eyeBaseWidth = 20;
     const innerEyeBaseX = 20;
-    
+    const baseStrokeWidth = 2;
+
     // Calculate vertical positions
     const eyebrowY = centerY - 50;
     const noseY = centerY + 10;
-    const eyeBaseY = eyebrowY + (noseY - eyebrowY) * 0.4; // 60% towards eyebrows from middle point
-    
+    const eyeBaseY = eyebrowY + (noseY - eyebrowY) * 0.4;
+    const mouthY = centerY + 40;
+    const noseMouthDistance = mouthY - noseY;
+
     // Scale parameters
     const scaledParams = {
-      eyebrowCurve: 8 * (params.eyebrowCurve + 1) * 0.5, // 0 to 8
-      eyebrowPeakOffset: 0.2 + 0.6 * ((params.eyebrowPeakOffset + 1) * 0.5), // 20% to 80%
-      eyebrowWidth: 1 + 0.15 * (params.eyebrowWidth + 1), // 1 to 1.3 multiplier
+      eyebrowCurve: 8 * (params.eyebrowCurve + 1) * 0.5,
+      eyebrowPeakOffset: 0.2 + 0.6 * ((params.eyebrowPeakOffset + 1) * 0.5),
+      eyebrowWidth: 1 + 0.15 * (params.eyebrowWidth + 1),
       eyeYOffset: 6 * params.eyeYOffset,
       eyeXOffset: 3 * params.eyeXOffset,
-      upperLipCurve: (params.upperLipCurve + 1) * 0.5, // 0 to 1
-      lowerLipCurve: (-params.lowerLipCurve + 1) * 0.5, // Inverted, 0 to 1
-      cupidBowOffset: 0.5 + 0.3 * params.cupidBowOffset, // 0.2 to 0.8
+      upperLipCurve: (params.upperLipCurve + 1) * 0.5,
+      lowerLipCurve: (-params.lowerLipCurve + 1) * 0.5,
+      cupidBowOffset: 0.5 + 0.3 * params.cupidBowOffset,
       noseWidth: 12 + 2 * params.noseWidth,
+      cupidBowStrength: (params.cupidBowStrength + 1) * 0.5, // 0 to 1
+      mouthWidth: 1.25 + 0.625 * (params.mouthWidth + 1), // 1.25 to 2.5
+      eyebrowStrokeWidth: 1 + 0.75 * (params.eyebrowStrokeWidth + 1) // 1 to 2.5 times base width
     };
-    
+
     // Calculate eye positions
     const eyeY = eyeBaseY + scaledParams.eyeYOffset;
     const innerEyeX = innerEyeBaseX + scaledParams.eyeXOffset;
     const eyeWidth = eyeBaseWidth;
-    
+
     const leftInnerEyeX = centerX - innerEyeX;
     const leftOuterEyeX = leftInnerEyeX - eyeWidth;
     const rightInnerEyeX = centerX + innerEyeX;
     const rightOuterEyeX = rightInnerEyeX + eyeWidth;
-    
+
     // Calculate eyebrow positions
     const eyebrowBaseWidth = 20;
     const leftOuterEyebrowX = leftInnerEyeX - (eyebrowBaseWidth * scaledParams.eyebrowWidth);
     const rightOuterEyebrowX = rightInnerEyeX + (eyebrowBaseWidth * scaledParams.eyebrowWidth);
-    
+
     // Calculate peak positions using inner points as reference
     const eyebrowSpan = eyebrowBaseWidth * scaledParams.eyebrowWidth;
     const leftEyebrowPeakX = leftInnerEyeX - (eyebrowSpan * scaledParams.eyebrowPeakOffset);
     const rightEyebrowPeakX = rightInnerEyeX + (eyebrowSpan * scaledParams.eyebrowPeakOffset);
-    
+
     // Fixed nostril positions
     const nostrilDistance = 5; // Fixed distance from center
     const leftNostrilX = centerX - nostrilDistance;
     const rightNostrilX = centerX + nostrilDistance;
-    
-    // Calculate control points for lips
-    const lipStart = centerX - 30;
-    const lipEnd = centerX + 30;
-    const lipLength = Math.abs(lipEnd - lipStart) / 2;
+
+    // Calculate mouth positions with variable width
+    const mouthWidth = noseMouthDistance * scaledParams.mouthWidth;
+    const lipStart = centerX - mouthWidth / 2;
+    const lipEnd = centerX + mouthWidth / 2;
+    const lipLength = mouthWidth / 2;
     const leftLipPeakX = lipStart + lipLength * scaledParams.cupidBowOffset;
     const rightLipPeakX = lipEnd - lipLength * scaledParams.cupidBowOffset;
-    
+
+    // Calculate lip heights and cupid bow
+    const upperLipHeight = 5 * scaledParams.upperLipCurve;
+    const upperLipPeakY = mouthY - upperLipHeight;
+    const cupidBowDip = upperLipHeight * scaledParams.cupidBowStrength;
+    const cupidBowY = upperLipPeakY + cupidBowDip;
+
+    // Calculate stroke widths
+    const strokeWidths = {
+      base: baseStrokeWidth,
+      eyebrows: baseStrokeWidth * scaledParams.eyebrowStrokeWidth
+    };
+
     return {
+      strokeWidths,
       eyebrows: {
         y: eyebrowY,
         leftPath: `M${leftOuterEyebrowX} ${eyebrowY}
@@ -178,18 +207,18 @@ export class FaceModel {
                        Q${centerX + scaledParams.noseWidth + 2} ${centerY + 5} ${centerX + scaledParams.noseWidth} ${noseY}`,
       },
       mouth: {
-        y: centerY + 40,
-        upperPath: `M${lipStart} ${centerY + 40}
-                   C${leftLipPeakX - 10} ${centerY + 40 - scaledParams.upperLipCurve * 5}
-                    ${leftLipPeakX} ${centerY + 40 - scaledParams.upperLipCurve * 8}
-                    ${centerX} ${centerY + 40}
-                   C${rightLipPeakX} ${centerY + 40 - scaledParams.upperLipCurve * 8}
-                    ${rightLipPeakX + 10} ${centerY + 40 - scaledParams.upperLipCurve * 5}
-                    ${lipEnd} ${centerY + 40}`,
-        lowerPath: `M${lipStart} ${centerY + 40}
-                   C${centerX - 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8}
-                    ${centerX + 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8}
-                    ${lipEnd} ${centerY + 40}`,
+        y: mouthY,
+        upperPath: `M${lipStart} ${mouthY}
+                   C${leftLipPeakX} ${upperLipPeakY}
+                    ${leftLipPeakX} ${upperLipPeakY}
+                    ${centerX} ${cupidBowY}
+                   C${rightLipPeakX} ${upperLipPeakY}
+                    ${rightLipPeakX} ${upperLipPeakY}
+                    ${lipEnd} ${mouthY}`,
+        lowerPath: `M${lipStart} ${mouthY}
+                   C${centerX - mouthWidth/4} ${mouthY + scaledParams.lowerLipCurve * 8}
+                    ${centerX + mouthWidth/4} ${mouthY + scaledParams.lowerLipCurve * 8}
+                    ${lipEnd} ${mouthY}`,
       },
     };
   }
