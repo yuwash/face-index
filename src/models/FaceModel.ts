@@ -69,6 +69,9 @@ export class FaceModel {
       lowerLipCurve: Math.sin(5 * this.BASE_FREQ * t + startingPoint.lowerLipCurve),
       cupidBowOffset: Math.sin(19 * this.BASE_FREQ * t + startingPoint.cupidBowOffset),
       noseWidth: Math.sin(11 * this.BASE_FREQ * t + startingPoint.noseWidth),
+      cupidBowStrength: Math.sin(23 * this.BASE_FREQ * t + startingPoint.cupidBowStrength),
+      mouthWidth: Math.sin(29 * this.BASE_FREQ * t + startingPoint.mouthWidth),
+      eyebrowStrokeWidth: Math.sin(31 * this.BASE_FREQ * t + startingPoint.eyebrowStrokeWidth)
     };
   }
 
