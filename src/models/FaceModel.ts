@@ -106,7 +106,7 @@ export class FaceModel {
     
     // Scale parameters
     const scaledParams = {
-      eyebrowCurve: (params.eyebrowCurve + 1) * 0.5, // 0 to 1
+      eyebrowCurve: 8 * (params.eyebrowCurve + 1) * 0.5, // 0 to 8
       eyebrowPeakOffset: 0.2 + 0.6 * ((params.eyebrowPeakOffset + 1) * 0.5), // 20% to 80%
       eyebrowWidth: 1 + 0.15 * (params.eyebrowWidth + 1), // 1 to 1.3 multiplier
       eyeYOffset: 6 * params.eyeYOffset,
@@ -127,16 +127,15 @@ export class FaceModel {
     const rightInnerEyeX = centerX + innerEyeX;
     const rightOuterEyeX = rightInnerEyeX + eyeWidth;
     
-    // Calculate control points for eyebrows using actual eye positions
+    // Calculate eyebrow positions
     const eyebrowBaseWidth = 20;
-    const leftEyebrowEnd = leftInnerEyeX; // Align with inner eye corner
-    const leftEyebrowStart = leftEyebrowEnd - (eyebrowBaseWidth * scaledParams.eyebrowWidth);
-    const rightEyebrowEnd = rightInnerEyeX; // Align with inner eye corner
-    const rightEyebrowStart = rightEyebrowEnd + (eyebrowBaseWidth * scaledParams.eyebrowWidth);
+    const leftOuterEyebrowX = leftInnerEyeX - (eyebrowBaseWidth * scaledParams.eyebrowWidth);
+    const rightOuterEyebrowX = rightInnerEyeX + (eyebrowBaseWidth * scaledParams.eyebrowWidth);
     
-    const eyebrowLength = Math.abs(leftEyebrowEnd - leftEyebrowStart);
-    const leftEyebrowPeakX = leftEyebrowStart + eyebrowLength * scaledParams.eyebrowPeakOffset;
-    const rightEyebrowPeakX = rightEyebrowStart - eyebrowLength * scaledParams.eyebrowPeakOffset;
+    // Calculate peak positions using inner points as reference
+    const eyebrowSpan = eyebrowBaseWidth * scaledParams.eyebrowWidth;
+    const leftEyebrowPeakX = leftInnerEyeX - (eyebrowSpan * scaledParams.eyebrowPeakOffset);
+    const rightEyebrowPeakX = rightInnerEyeX + (eyebrowSpan * scaledParams.eyebrowPeakOffset);
     
     // Fixed nostril positions
     const nostrilDistance = 5; // Fixed distance from center
@@ -153,14 +152,14 @@ export class FaceModel {
     return {
       eyebrows: {
         y: eyebrowY,
-        leftPath: `M${leftEyebrowStart} ${eyebrowY} 
-                  C${leftEyebrowPeakX - 10} ${eyebrowY - scaledParams.eyebrowCurve * 8} 
-                   ${leftEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve * 10} 
-                   ${leftEyebrowEnd} ${eyebrowY}`,
-        rightPath: `M${rightEyebrowStart} ${eyebrowY} 
-                   C${rightEyebrowPeakX + 10} ${eyebrowY - scaledParams.eyebrowCurve * 8} 
-                    ${rightEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve * 10} 
-                    ${rightEyebrowEnd} ${eyebrowY}`,
+        leftPath: `M${leftOuterEyebrowX} ${eyebrowY}
+                  C${leftEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve}
+                   ${leftEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve}
+                   ${leftInnerEyeX} ${eyebrowY}`,
+        rightPath: `M${rightOuterEyebrowX} ${eyebrowY}
+                   C${rightEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve}
+                    ${rightEyebrowPeakX} ${eyebrowY - scaledParams.eyebrowCurve}
+                    ${rightInnerEyeX} ${eyebrowY}`,
       },
       eyes: {
         y: eyeY,
@@ -173,23 +172,23 @@ export class FaceModel {
         y: noseY,
         leftNostril: { x: leftNostrilX, y: noseY },
         rightNostril: { x: rightNostrilX, y: noseY },
-        leftAlaePath: `M${centerX - scaledParams.noseWidth} ${centerY} 
+        leftAlaePath: `M${centerX - scaledParams.noseWidth} ${centerY}
                       Q${centerX - scaledParams.noseWidth - 2} ${centerY + 5} ${centerX - scaledParams.noseWidth} ${noseY}`,
-        rightAlaePath: `M${centerX + scaledParams.noseWidth} ${centerY} 
+        rightAlaePath: `M${centerX + scaledParams.noseWidth} ${centerY}
                        Q${centerX + scaledParams.noseWidth + 2} ${centerY + 5} ${centerX + scaledParams.noseWidth} ${noseY}`,
       },
       mouth: {
         y: centerY + 40,
-        upperPath: `M${lipStart} ${centerY + 40} 
-                   C${leftLipPeakX - 10} ${centerY + 40 - scaledParams.upperLipCurve * 5} 
+        upperPath: `M${lipStart} ${centerY + 40}
+                   C${leftLipPeakX - 10} ${centerY + 40 - scaledParams.upperLipCurve * 5}
                     ${leftLipPeakX} ${centerY + 40 - scaledParams.upperLipCurve * 8}
                     ${centerX} ${centerY + 40}
                    C${rightLipPeakX} ${centerY + 40 - scaledParams.upperLipCurve * 8}
                     ${rightLipPeakX + 10} ${centerY + 40 - scaledParams.upperLipCurve * 5}
                     ${lipEnd} ${centerY + 40}`,
-        lowerPath: `M${lipStart} ${centerY + 40} 
-                   C${centerX - 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8} 
-                    ${centerX + 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8} 
+        lowerPath: `M${lipStart} ${centerY + 40}
+                   C${centerX - 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8}
+                    ${centerX + 15} ${centerY + 40 + scaledParams.lowerLipCurve * 8}
                     ${lipEnd} ${centerY + 40}`,
       },
     };
