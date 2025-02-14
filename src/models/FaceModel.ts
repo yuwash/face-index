@@ -14,8 +14,6 @@ export interface FaceParameters {
 }
 
 export interface FaceDimensions {
-  width: number;
-  height: number;
   centerX: number;
   centerY: number;
 }
