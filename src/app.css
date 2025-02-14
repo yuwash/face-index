@@ -32,3 +32,10 @@
   border-color: #cc4b37;
   background-color: #faedeb;
 }
+
+/* Responsive input group */
+@media screen and (max-width: 640px) {
+  .input-group.stacked-for-small {
+    display: block;
+  }
+}

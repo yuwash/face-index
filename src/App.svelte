@@ -231,7 +231,7 @@
       </div>
       <div class="card-section">
         <form on:submit={handleSubmit}>
-          <div class="input-group">
+          <div class="input-group stacked-for-small">
             <span class="input-group-label">Starting Point Reference</span>
             <input
               type="text"
